@@ -191,14 +191,6 @@ for _ in range(6):
 
     grid = new_grid
 
-    active_cubes = 0
-
-    for cube in grid:
-        if grid[cube] == '#':
-            active_cubes += 1
-
-    print("Part 2:", active_cubes)
-
     #output_grid(grid, x_bounds, y_bounds, z_bounds)
 
 active_cubes = 0
