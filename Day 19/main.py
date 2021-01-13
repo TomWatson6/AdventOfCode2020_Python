@@ -1,54 +1,27 @@
-import re
+
 
 def check(rules, index, message, dictionary):
     rule = rules.get(index)
-    dictionary["count"] += 1       
-
+    dictionary["count"] += 1
+    match = True
+    if len(dictionary["matched_message"]) >= len(message):
+        return False
     for pos in rule:
+        match = True
         if type(pos) is str:
             dictionary["matched_message"] += pos
-            break
         else:
-            if index in pos:
-                # pull matched message off of the message (if matched message doesn't exist, it won't pull anything off)
-                # make temp pos by removing index from pos remembering it's position in pos??
-                # expand outwards by making larger and larger string using starts with to check how many iterations
-                #   match the beginning of the remainder of the message
-                # make matched message = matched message + string established using size of it before it broke
-                # break to check as normal with crazy string, should always be returning true??
-                # temp = message[len(matched_message):]
-                # dictionary["cyclic_matched_message"] = ""
-                # temp_pos = [x for x in pos if x != index]
-                # position = pos.index(index)
-                # temp_to_add = str(to_add)
-                # first = True
-                # while temp.startswith(to_add):
-                #     temp_to_add = dictionary["cyclic_matched_message"]
-                #     if not first:
-                #         if position > 0:
-                #             temp_pos.insert(0, temp_pos[0])
-                #         temp_pos.append(temp_pos[-1])
-                #     match = True
-                #     for i in pos:
-                #         if not check(rules, i, message, dictionary):
-                #             match = False
-                #     if match or pos == rule[-1]:
-                #         break
-                #     else:
-                #         dictionary["cyclic_matched_message"] = temp_to_add
-                return True
+            matched_message_copy = dictionary["matched_message"]
+            for i in pos:
+                if dictionary["matched_message"] == message and i != 31:
+                    dictionary["matched_message"] += "c"
+                if not check(rules, i, message, dictionary):
+                    match = False
 
+            if match or pos == rule[-1]:
+                break
             else:
-                match = True
-                matched_message_copy = dictionary["matched_message"]
-                for i in pos:
-                    if not check(rules, i, message, dictionary):
-                        match = False
-
-                if match or pos == rule[-1]:
-                    break
-                else:
-                    dictionary["matched_message"] = matched_message_copy
+                dictionary["matched_message"] = matched_message_copy
 
     matched_message = dictionary["matched_message"]
 
@@ -58,7 +31,7 @@ def check(rules, index, message, dictionary):
         elif message == matched_message and index == 0:
             return True
 
-    return False    
+    return False
 
 f = open("input.txt")
 input = f.read()
@@ -99,17 +72,17 @@ for message in messages:
 print("Part 1:", total)
 print("Number of checks:", dictionary["count"])
 
-# rules[8] = [[42], [42, 8]]
-# rules[11] = [[42, 31], [42, 11, 31]]
+rules[8] = [[42], [42, 8]]
+rules[11] = [[42, 31], [42, 11, 31]]
 
-# total = 0
-# dictionary = dict()
-# dictionary["count"] = 0
+total = 0
+dictionary = dict()
+dictionary["count"] = 0
 
-# for message in messages:
-#     dictionary["matched_message"] = ""
-#     if check(rules, 0, message, dictionary):
-#         total += 1
+for message in messages:
+    dictionary["matched_message"] = ""
+    if check(rules, 0, message, dictionary):
+        total += 1
 
-# print("Part 2:", total)
-# print("Number of checks:", dictionary["count"])
+print("Part 2:", total)
+print("Number of checks:", dictionary["count"])
