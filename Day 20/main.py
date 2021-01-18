@@ -7,6 +7,11 @@ class Tile:
             tile_input[t] = [char for char in tile_input[t]]
         self.raw_tile = tile_input
 
+        # The following stored a tuple (flips, rotations) for dynamic programming 
+        self.stored_configurations = dict()
+        self.stored_configurations[(0, 0)] = self.raw_tile
+        self.current = (0, 0)
+
     def __str__(self):
         to_return = ""
         for y in range(len(self.raw_tile)):
@@ -40,10 +45,25 @@ class Tile:
         return edge
 
     def flip(self):
+        # self.current = ((self.current[0] + 1) % 2, (4 - self.current[1]) % 4)
+        # if self.stored_configurations.get(self.current) != None:
+        #     self.raw_tile = self.stored_configurations[self.current]
+        #     return
+
         for x in range(len(self.raw_tile)):
             self.raw_tile[x] = self.raw_tile[x][::-1]
 
+        # self.stored_configurations[self.current] = self.raw_tile
+
     def rotate(self, turns):
+        # if self.current[0] == 0:
+        #     self.current = (self.current[0], (self.current[1] + 1) % 4)
+        # else:
+        #     self.current = (self.current[0], (self.current[1] - 1) % 4)
+        # if self.stored_configurations.get(self.current) != None:
+        #     self.raw_tile = self.stored_configurations[self.current]
+        #     return
+
         for _ in range(turns):
             new_raw_tile = []
             for x in range(len(self.raw_tile[0])):
@@ -52,6 +72,8 @@ class Tile:
                     row.append(self.raw_tile[y][x])
                 new_raw_tile.append(row)
             self.raw_tile = new_raw_tile
+
+        # self.stored_configurations[self.current] = self.raw_tile
 
     def check(self, coord, tile, grid):
         to_check = [(coord[0] - 1, coord[1]), (coord[0] + 1, coord[1]), (coord[0], coord[1] - 1), (coord[0], coord[1] + 1)]
@@ -85,7 +107,7 @@ class Tile:
                             found_coord.append(coordinate)
                             placed = True
                             break
-                    tile.rotate(1)
+                        tile.rotate(1)
                     if placed:
                         break
                     tile.flip()
@@ -98,21 +120,6 @@ class Tile:
 
         return found_coord[0]
 
-def count_outer(tile): 
-    total = len([x for x in tile.top() if x == '#'])
-    total += len([x for x in tile.bottom() if x == '#'])
-    total += len([x for x in tile.left()[1:-1] if x == '#'])
-    total += len([x for x in tile.right()[1:-1] if x == '#'])
-    return total
-
-def count_tile(tile):
-    total = 0
-
-    for row in tile.raw_tile:
-        total += len([x for x in row if x == '#'])
-
-    return total
-
 def flip(grid):
     for x in range(len(grid)):
         grid[x] = grid[x][::-1]
@@ -120,13 +127,13 @@ def flip(grid):
 
 def rotate(grid, turns):
     for _ in range(turns):
-        new_raw_tile = []
+        new_grid = []
         for x in range(len(grid[0])):
             row = []
             for y in range(len(grid) - 1, -1, -1):
                 row.append(grid[y][x])
-            new_raw_tile.append(row)
-        grid = new_raw_tile
+            new_grid.append(row)
+        grid = new_grid
     return grid
 
 def print_grid(grid):
@@ -199,7 +206,7 @@ while len(tiles) > 0 and changed:
             result = grid[placed].tesselates(grid, placed, tile)
             if result != None:
                 grid[result] = tile
-                print("Placed:", result, ":", tile.id)
+                print("Placed:", tile.id, "at", result)
                 tiles.remove(tile)
                 changed = True
                 found = True
@@ -207,16 +214,46 @@ while len(tiles) > 0 and changed:
         if found:
             break
 
-coords = []
+# coords = []
 
-for loc in grid:
-    coords.append(loc)
+# for loc in grid:
+#     coords.append(loc)
 
-coords.sort()
-for loc in coords:
-    print(loc, ":", grid[loc].id)
+# ids = []
+# for loc in coords:
+#     ids.append(grid[loc].id)
+
+# coords.sort()
+# for loc in coords:
+#     print(loc, ":", grid[loc].id)
+
+# missing = [x.id for x in tiles if x.id not in ids]
+# print("Missing:", missing)
     
 print_grid(grid)
+
+corners = []
+adjacents_map = dict()
+
+for coord in grid:
+    to_check = [(coord[0] - 1, coord[1]), (coord[0] + 1, coord[1]), (coord[0], coord[1] - 1), (coord[0], coord[1] + 1)]
+    for coordinate in to_check:
+        if grid.get(coordinate) != None:
+            if adjacents_map.get(coord) != None:
+                adjacents_map[coord] += 1
+            else:
+                adjacents_map[coord] = 1
+
+for coord in adjacents_map:
+    if adjacents_map[coord] == 2:
+        corners.append(grid[coord].id)
+
+product = 1
+
+for tile_id in corners:
+    product *= tile_id
+
+print("Part 1:", product)
 
 def find_sea_monsters(grid, sea_monster):
     sea_monsters = 0
@@ -248,7 +285,7 @@ for _ in range(2):
         grid = rotate(grid, 1)
     grid = flip(grid)
 
-print("Sea Monsters:", sea_monsters)
+# print("Sea Monsters:", sea_monsters)
 
 sea_monsters = [x for x in sea_monsters if x != 0][0]
 
@@ -259,4 +296,4 @@ for row in grid:
 
 roughness -= 15 * sea_monsters
 
-print("Roughness:", roughness)
+print("Part 2:", roughness)
