@@ -81,10 +81,11 @@ for i in range(100):
             (tile[0] + 1, tile[1])
         ]
         for adj in adjacents:
-            check(adj, tiles, new_tiles, True)
+            if new_tiles.get(adj) == None:
+                check(adj, tiles, new_tiles, True)
     tiles = new_tiles
     blacks = [x for x in tiles if tiles.get(x) % 2 == 1]
-    print("Iteration:", i, "/ Tile Count:", len(tiles), "/ Blacks:", len(blacks))
+    print("Iteration:", (i + 1), "/ Tile Count:", len(tiles), "/ Blacks:", len(blacks))
 
 blacks = [x for x in tiles if tiles.get(x) % 2 == 1]
 
